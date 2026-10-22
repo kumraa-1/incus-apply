@@ -84,6 +84,9 @@ func managedSnapshot(res *config.Resource) (string, error) {
 	if res.Network != "" {
 		state["network"] = res.Network
 	}
+	if res.Zone != "" {
+		state["zone"] = res.Zone
+	}
 	if res.Target != "" {
 		state["target"] = res.Target
 	}
@@ -146,6 +149,9 @@ func managedSnapshot(res *config.Resource) (string, error) {
 	}
 	if res.Ports != nil {
 		state["ports"] = res.Ports
+	}
+	if res.Entries != nil {
+		state["entries"] = res.Entries
 	}
 
 	yamlData, err := yaml.Marshal(state)
@@ -332,6 +338,9 @@ func removeManagedState(current, previous map[string]any) {
 	if _, ok := previous["ports"]; ok {
 		delete(current, "ports")
 	}
+	if _, ok := previous["entries"]; ok {
+		delete(current, "entries")
+	}
 }
 
 func applyManagedState(current, desired map[string]any) {
@@ -357,7 +366,7 @@ func applyManagedState(current, desired map[string]any) {
 		}
 	}
 
-	for _, key := range []string{"description", "profiles", "ingress", "egress", "ports"} {
+	for _, key := range []string{"description", "profiles", "ingress", "egress", "ports", "entries"} {
 		if value, ok := desired[key]; ok {
 			current[key] = value
 		}
@@ -452,6 +461,10 @@ func createOnlyFields(resourceType string) map[string]bool {
 		return map[string]bool{
 			"network":        true,
 			"listen_address": true,
+		}
+	case "network-zone-record":
+		return map[string]bool{
+			"zone": true,
 		}
 	default:
 		return nil
